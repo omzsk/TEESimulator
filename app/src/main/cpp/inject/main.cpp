@@ -226,7 +226,7 @@ static std::optional<int> transfer_fd_to_remote(int pid, const char *lib_path, s
 }
 
 static std::string get_remote_dlerror(int pid, struct user_regs_struct &regs, const std::vector<lsplt::MapInfo> &local_map,
-                                     const std::vector<lsplt::MapInfo> &remote_map, uintptr_t libc_return_addr) {
+                                      const std::vector<lsplt::MapInfo> &remote_map, uintptr_t libc_return_addr) {
     auto dlerror_addr = find_func_addr(local_map, remote_map, constants::kLibdlModule, "dlerror");
     if (!dlerror_addr) {
         return "Failed to find dlerror function";
