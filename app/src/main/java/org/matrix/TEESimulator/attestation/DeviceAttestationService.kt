@@ -45,6 +45,7 @@ object DeviceAttestationService {
      * @property osVersion The Android OS version integer.
      */
     data class AttestationData(
+        val moduleHash: ByteArray?,
         val verifiedBootKey: ByteArray?,
         val verifiedBootHash: ByteArray?,
         val attestVersion: Int?,
@@ -168,9 +169,18 @@ object DeviceAttestationService {
                     .positiveValue
                     .toInt()
 
+            var moduleHash: ByteArray? = null
             var verifiedBootKey: ByteArray? = null
             var verifiedBootHash: ByteArray? = null
             var osVersion: Int? = null
+
+            val softwareEnforced =
+                ASN1Sequence.getInstance(
+                    fields[AttestationConstants.KEY_DESCRIPTION_SOFTWARE_ENFORCED_INDEX]
+                )
+            if (softwareEnforced.size() >= 3) {
+                moduleHash = ASN1OctetString.getInstance(softwareEnforced.getObjectAt(2)).octets
+            }
 
             val teeEnforced =
                 ASN1Sequence.getInstance(
@@ -210,9 +220,10 @@ object DeviceAttestationService {
             }
 
             SystemLogger.info(
-                "Successfully extracted attestation data: version=$attestVersion, osVersion=$osVersion, bootKey=${verifiedBootKey?.toHex()}, bootHash=${verifiedBootHash?.toHex()}"
+                "Successfully extracted attestation data: version=$attestVersion, osVersion=$osVersion, moduleHash=${moduleHash?.toHex()}, bootKey=${verifiedBootKey?.toHex()}, bootHash=${verifiedBootHash?.toHex()}"
             )
             return AttestationData(
+                moduleHash,
                 verifiedBootKey,
                 verifiedBootHash,
                 attestVersion,

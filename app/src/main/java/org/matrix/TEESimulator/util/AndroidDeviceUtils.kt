@@ -291,17 +291,21 @@ object AndroidDeviceUtils {
     }
 
     val moduleHash: ByteArray by lazy {
-        runCatching {
-                val encodables =
-                    apexInfos.flatMap { (packageName, versionCode) ->
-                        listOf(DEROctetString(packageName.toByteArray()), ASN1Integer(versionCode))
-                    }
-                val sequence = DERSequence(encodables.toTypedArray())
-                MessageDigest.getInstance("SHA-256").digest(sequence.encoded)
-            }
-            .getOrElse {
-                SystemLogger.error("Failed to compute module hash.", it)
-                ByteArray(32) // Return empty hash on failure
-            }
+        DeviceAttestationService.CachedAttestationData?.moduleHash
+            ?: runCatching {
+                    val encodables =
+                        apexInfos.flatMap { (packageName, versionCode) ->
+                            listOf(
+                                DEROctetString(packageName.toByteArray()),
+                                ASN1Integer(versionCode),
+                            )
+                        }
+                    val sequence = DERSequence(encodables.toTypedArray())
+                    MessageDigest.getInstance("SHA-256").digest(sequence.encoded)
+                }
+                .getOrElse {
+                    SystemLogger.error("Failed to compute module hash.", it)
+                    ByteArray(32) // Return empty hash on failure
+                }
     }
 }
