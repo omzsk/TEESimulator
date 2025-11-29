@@ -154,6 +154,11 @@ object DeviceAttestationService {
 
             // The extension's value is an ASN.1 sequence.
             val keyDescriptionSeq = ASN1Sequence.getInstance(extension.extnValue.octets)
+            var formattedString =
+                keyDescriptionSeq.joinToString(separator = ", ") {
+                    AttestationPatcher.formatAsn1Primitive(it)
+                }
+            SystemLogger.verbose("Cached attestation data: ${formattedString}")
             val fields = keyDescriptionSeq.toArray()
 
             val attestVersion =
@@ -179,7 +184,11 @@ object DeviceAttestationService {
                     fields[AttestationConstants.KEY_DESCRIPTION_SOFTWARE_ENFORCED_INDEX]
                 )
             if (softwareEnforced.size() >= 3) {
-                moduleHash = ASN1OctetString.getInstance(softwareEnforced.getObjectAt(2)).octets
+                moduleHash =
+                    ASN1OctetString.getInstance(
+                            ASN1TaggedObject.getInstance(softwareEnforced.getObjectAt(2)).baseObject
+                        )
+                        .octets
             }
 
             val teeEnforced =
