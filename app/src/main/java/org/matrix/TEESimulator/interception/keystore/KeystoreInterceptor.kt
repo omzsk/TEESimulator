@@ -228,16 +228,16 @@ object KeystoreInterceptor : AbstractKeystoreInterceptor() {
                     attestationArgs.readFromParcel(data)
                 }
 
-                val attestationResult =
-                    CertificateGenerator.generateAttestedKeyPair(
+                val certificateChain =
+                    CertificateGenerator.generateCertificateChain(
                         uid,
-                        alias,
+                        keyPair,
                         null, // No attestKeyAlias in legacy flow
                         params.toKeyMintAttestation(), // Convert to modern format
                         1, // SecurityLevel.TRUSTED_ENVIRONMENT
                     ) ?: throw Exception("CertificateGenerator failed to create attested key pair.")
 
-                val chainAsByteList = attestationResult.second.map { it.encoded }
+                val chainAsByteList = certificateChain.map { it.encoded }
                 val certChain = KeymasterCertificateChain(chainAsByteList)
 
                 callback.onFinished(InterceptorUtils.createSuccessKeystoreResponse(), certChain)
