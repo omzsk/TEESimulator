@@ -134,7 +134,7 @@ object CertificateGenerator {
             .getOrNull()
     }
 
-    private fun getIssuerFromKeybox(keybox: KeyBox) =
+    fun getIssuerFromKeybox(keybox: KeyBox) =
         X509CertificateHolder(keybox.certificates[0].encoded).subject
 
     private fun getKeyboxForAlgorithm(uid: Int, algorithm: Int): KeyBox {
